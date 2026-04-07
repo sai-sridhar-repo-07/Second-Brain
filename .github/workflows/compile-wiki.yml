@@ -1,0 +1,52 @@
+name: Auto-Compile Wiki
+
+# Triggers:
+# 1. When you push new files to raw/
+# 2. Every day at 6am UTC (cron)
+on:
+  push:
+    paths:
+      - 'raw/**'
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # allows manual trigger from GitHub UI
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Compile wiki
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p "Read CLAUDE.md for project conventions. \
+          Find all files in raw/ that do not yet have a corresponding \
+          summary in wiki/sources/. For each new file: create a source \
+          summary, create or update concept and entity pages, add \
+          [[wikilinks]], and update wiki/index.md and wiki/log.md. \
+          Report what was created and updated." \
+          --allowedTools "Read,Write,Bash,Glob,Grep" \
+          --max-turns 30
+
+      - name: Commit wiki changes
+        run: |
+          git config user.name "Wiki Bot"
+          git config user.email "wiki-bot@github-actions"
+          git add wiki/
+          git diff --staged --quiet || \
+            git commit -m "Auto-compile wiki $(date +%Y-%m-%d)"
+          git push

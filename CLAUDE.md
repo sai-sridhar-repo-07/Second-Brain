@@ -11,32 +11,83 @@ You are the librarian. You maintain this wiki entirely. I never manually edit wi
 - **wiki/** - You maintain this entirely. Every page is markdown.
 - **outputs/** - You save query results and reports here.
 
+## File Conventions
+- All filenames: kebab-case, lowercase (e.g., `active-inference.md`)
+- Source summaries: `author-year-short-title.md` (e.g., `vaswani-2017-attention.md`)
+- Use [[wikilinks]] for all internal cross-references
+- Link only the first occurrence of a concept per section
+
+## YAML Frontmatter (Required on Every Page)
+Every wiki page must start with this block:
+
+```yaml
+---
+title: "Page Title"
+date_created: YYYY-MM-DD
+date_modified: YYYY-MM-DD
+summary: "One to two sentences describing this page."
+type: concept | entity | source | synthesis | output
+tags:
+  - topic-tag
+---
+```
+
+For source pages, also add:
+```yaml
+source_url: "https://..."
+authors:
+  - "Author Name"
+```
+
+For concept pages, also add:
+```yaml
+related:
+  - "[[related-page]]"
+confidence: established | emerging | speculative
+```
+
 ## Wiki Maintenance Rules
 
-### When I add a new source to raw/:
+### When I add a new source to raw/ (INGEST):
 1. Read the entire source
-2. Create a summary page in wiki/sources/ named after the source (use kebab-case: source-name.md)
-3. Extract and create/update entity pages (people, companies, tools) in wiki/entities/
-4. Extract and create/update concept pages (ideas, frameworks) in wiki/concepts/
-5. Add cross-references using [[page-name]] syntax to link related topics
-6. Update wiki/index.md with the new pages
-7. Log the ingestion in wiki/log.md with timestamp and what you created/updated
+2. Create a source summary page in `wiki/sources/` with full YAML frontmatter
+3. Extract and create/update entity pages (people, companies, tools) in `wiki/entities/`
+4. Extract and create/update concept pages (ideas, frameworks) in `wiki/concepts/`
+5. Update EXISTING pages by appending — never rewrite from scratch
+6. Add cross-references using [[page-name]] syntax to link related topics
+7. Update `wiki/index.md` with the new pages
+8. Log the ingestion in `wiki/log.md` with timestamp and what you created/updated
 
-### Page Format Rules
+### When I ask a question (QUERY):
+1. Read `wiki/index.md` to understand available content
+2. Read the relevant wiki pages
+3. Synthesise an answer with citations using [[wikilinks]]
+4. Save the answer as `wiki/synthesis/{question-slug}.md` with full YAML frontmatter
+5. Update `wiki/index.md` and `wiki/log.md`
+6. Ask: "Would you like me to save this as a synthesis page?" if not already doing so
+
+### When I ask for a health check (LINT):
+1. Find broken [[links]] to pages that don't exist
+2. Find orphan pages with no incoming links from other pages
+3. Find contradictions between sources on the same topic — flag with ⚠️
+4. Find concepts mentioned in multiple places but never given their own page
+5. Create stub pages for top 5 most-referenced missing concepts
+6. Fix missing frontmatter automatically
+7. Suggest 3 new synthesis pages that would connect existing knowledge
+8. Write report to `wiki/outputs/lint-report-{date}.md`
+9. Update `wiki/log.md`
+
+## Page Format Rules
 Every wiki page must have:
-- A title (# Page Title)
+- A title (`# Page Title`)
+- YAML frontmatter at the top (see above)
 - A one-paragraph summary at the top
 - Cross-references to related pages using [[other-page]] syntax
-- Citations back to source files in raw/ using format: `Source: [[source-name]]`
+- Citations back to source files in raw/ using: `Source: [[source-name]]`
 
-### Entity Pages (wiki/entities/)
-For people, companies, tools. Include:
-- **What/Who**: One paragraph describing the entity
-- **Key Facts**: Important claims or details about them
-- **Mentioned In**: List of sources that reference this entity
-- **Related Entities**: Cross-references to other entities using [[entity-name]]
-
+## Entity Pages (wiki/entities/)
 Template:
+```
 # [Entity Name]
 
 [One paragraph summary]
@@ -47,116 +98,97 @@ Template:
 
 ## Mentioned In
 - [[source-1]]
-- [[source-2]]
 
 ## Related Entities
 - [[related-entity-1]]
-- [[related-entity-2]]
+```
 
-### Concept Pages (wiki/concepts/)
-For ideas, frameworks, theories. Include:
-- **Definition**: What the concept is (one paragraph)
-- **Perspectives**: How different sources explain it
-- **Contradictions**: Disagreements or different interpretations between sources
-- **Related Concepts**: Cross-references using [[concept-name]]
-
+## Concept Pages (wiki/concepts/)
 Template:
+```
 # [Concept Name]
 
 [One paragraph definition]
 
 ## How Sources Explain This
 - **[[source-1]]**: [perspective]
-- **[[source-2]]**: [perspective]
 
 ## Contradictions or Variations
 [Any disagreements between sources]
 
 ## Related Concepts
 - [[related-concept-1]]
-- [[related-concept-2]]
+```
 
-### Synthesis Pages (wiki/synthesis/)
-When I ask questions, good answers become permanent synthesis pages.
-
+## Synthesis Pages (wiki/synthesis/)
 Template:
+```
 # [Descriptive Title]
 
 **Question**: [The original question]
 
-**Answer**: [Your synthesized answer with citations]
+**Answer**: [Synthesised answer with citations]
 
 ## Sources Consulted
 - [[source-1]]
-- [[concept-1]]
-- [[entity-1]]
 
 ## Related Synthesis
 - [[other-synthesis-page]]
+```
 
-### Index Maintenance (wiki/index.md)
-Keep a master catalog organized by:
-
+## Index Maintenance (wiki/index.md)
 Template:
+```
 # Knowledge Base Index
 
 Last Updated: [Date]
 
 ## Sources
 - [[source-name]] - Brief one-line description
-- [[source-name-2]] - Brief one-line description
 
 ## Entities
 - [[entity-1]] - Who/what they are in 5 words
-- [[entity-2]] - Who/what they are in 5 words
 
 ## Concepts
 - [[concept-1]] - What it is in 5 words
-- [[concept-2]] - What it is in 5 words
 
 ## Synthesis
 - [[synthesis-1]] - Question it answers (Date: YYYY-MM-DD)
-- [[synthesis-2]] - Question it answers (Date: YYYY-MM-DD)
 
 ## Statistics
 - Total Sources: X
 - Total Entities: X
 - Total Concepts: X
 - Total Synthesis Pages: X
+```
 
-### Log Maintenance (wiki/log.md)
-Every operation you perform gets logged with timestamp.
-
-Template:
-# Knowledge Base Activity Log
-
+## Log Maintenance (wiki/log.md)
+Every operation gets logged:
+```
 ## [YYYY-MM-DD HH:MM]
-**Operation**: Ingest | Query | Update | Health Check
+**Operation**: Ingest | Query | Lint | Update
 **Summary**: [What you did]
 **Created**: [List of new pages]
 **Updated**: [List of modified pages]
+```
 
 ## Cross-Reference Rules
-- Use [[page-name]] syntax to link pages (without .md extension)
-- Link liberally - if a concept mentions another concept, link it
-- Link entities to concepts they're associated with
-- Link sources to entities and concepts they discuss
+- Use [[page-name]] syntax (without .md extension)
+- Link liberally — if a concept mentions another concept, link it
+- Never leave a [[wikilink]] pointing to nothing — always create at least a stub
 - When creating links, use the exact page name (case-sensitive)
 
-## Query Rules
-When I ask a question:
-1. Search across ALL wiki pages (sources, entities, concepts, synthesis)
-2. Synthesize an answer with specific citations to pages using [[page-name]]
-3. If it's a good answer worth saving, ask: "Would you like me to save this as a synthesis page?"
-4. If I say yes, create the synthesis page and update index + log
+## Page Creation Threshold
+- Create a full concept/entity page when a subject appears in 2+ sources
+- For single-mention subjects, create a stub page (frontmatter + one-line definition)
+- Never leave a [[wikilink]] pointing to nothing
 
-## Health Check Rules
-When I ask you to audit the wiki:
-- Find broken [[links]] to pages that don't exist
-- Find orphan pages with no incoming links from other pages
-- Find contradictions between sources on the same topic
-- Find concepts mentioned in multiple places but never given their own concept page
-- Suggest 3 new synthesis pages that would connect existing knowledge in valuable ways
+## Quality Standards
+- Summaries: 200–500 words, synthesise — don't copy
+- Concept articles: 500–1500 words
+- Always trace claims to specific source pages
+- Flag contradictions with ⚠️, noting both positions
+- Only make connections explicitly supported by source material
 
 ## My Domain Focus
 AI implementation patterns — practical techniques, architectures, workflows, and lessons for building and deploying production AI systems using Claude and other LLMs.
