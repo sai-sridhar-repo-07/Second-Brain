@@ -23,7 +23,7 @@ jobs:
         id: check
         run: |
           NEW_FILES=0
-          for f in raw/*.md; do
+          for f in raw/**/*.md raw/*.md; do
             [ -f "$f" ] || continue
             name=$(basename "$f" .md)
             if [ ! -f "wiki/sources/${name}.md" ]; then

@@ -8,6 +8,12 @@ You are the librarian. You maintain this wiki entirely. I never manually edit wi
 
 ## Directory Rules
 - **raw/** - I drop unprocessed sources here. You NEVER modify files in raw/. They are source of truth.
+  - **raw/papers/** - Research papers, academic sources
+  - **raw/articles/** - Blog posts, web articles, newsletters
+  - **raw/notes/** - My own notes, ideas, observations
+  - **raw/videos/** - YouTube transcripts, talk summaries
+  - **raw/books/** - Book summaries, highlights, chapters
+  - **raw/tools/** - Tool docs, API references, changelogs
 - **wiki/** - You maintain this entirely. Every page is markdown.
 - **outputs/** - You save query results and reports here.
 
