@@ -2,14 +2,12 @@ name: Auto-Compile Wiki
 
 # Triggers:
 # 1. When you push new files to raw/
-# 2. Every day at 6am UTC (cron)
+# 2. Manual trigger from GitHub UI
 on:
   push:
     paths:
       - 'raw/**'
-  schedule:
-    - cron: '0 6 * * *'
-  workflow_dispatch:  # allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   compile:
@@ -21,15 +19,39 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check for unprocessed sources
+        id: check
+        run: |
+          NEW_FILES=0
+          for f in raw/*.md; do
+            [ -f "$f" ] || continue
+            name=$(basename "$f" .md)
+            if [ ! -f "wiki/sources/${name}.md" ]; then
+              echo "New file found: $f"
+              NEW_FILES=$((NEW_FILES + 1))
+            fi
+          done
+          echo "new_files=$NEW_FILES" >> $GITHUB_OUTPUT
+          echo "Total new files: $NEW_FILES"
+
+      - name: Skip if nothing new
+        if: steps.check.outputs.new_files == '0'
+        run: |
+          echo "No new files in raw/ — skipping Claude. No credits used."
+          exit 0
+
       - name: Install Node.js
+        if: steps.check.outputs.new_files != '0'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install Claude Code
+        if: steps.check.outputs.new_files != '0'
         run: npm install -g @anthropic-ai/claude-code
 
       - name: Compile wiki
+        if: steps.check.outputs.new_files != '0'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
@@ -43,6 +65,7 @@ jobs:
           --max-turns 30
 
       - name: Commit wiki changes
+        if: steps.check.outputs.new_files != '0'
         run: |
           git config user.name "Wiki Bot"
           git config user.email "wiki-bot@github-actions"
