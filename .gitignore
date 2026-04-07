@@ -1,0 +1,6 @@
+# Obsidian personal settings — don't commit these
+.obsidian/
+
+# OS files
+.DS_Store
+Thumbs.db
