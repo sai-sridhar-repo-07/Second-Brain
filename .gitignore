@@ -1,6 +1,9 @@
 # Obsidian personal settings — don't commit these
 .obsidian/
 
+# Obsidian temp files
+*.base
+
 # OS files
 .DS_Store
 Thumbs.db
